@@ -2,25 +2,25 @@ use std::mem;
 
 enum Link<T> {
     Empty,
-    More(Box<Node<T>>)
+    More(Box<Node<T>>),
 }
 
 struct Node<T> {
     value: T,
-    next: Link<T>
+    next: Link<T>,
 }
 
 pub struct List<T> {
-    head: Link<T>
+    head: Link<T>,
 }
 
 impl<T> List<T> {
     pub fn new() -> Self {
-        List{head: Link::Empty}
+        List { head: Link::Empty }
     }
 
-    pub fn push(&mut self, el:T){
-        let new = Node{
+    pub fn push(&mut self, el: T) {
+        let new = Node {
             value: el,
             next: mem::replace(&mut self.head, Link::Empty),
         };
@@ -46,7 +46,7 @@ impl<T> Link<T> {
     pub fn length_after(&self) -> u32 {
         match &self {
             Link::Empty => 0,
-            Link::More(node) => 1 + node.next.length_after()
+            Link::More(node) => 1 + node.next.length_after(),
         }
     }
 }
@@ -58,7 +58,7 @@ mod test {
     #[test]
     fn list_new() {
         let mut list: List<i32> = List::new();
-        
+
         // New lists should be empty
         assert_eq!(list.pop(), None);
 
