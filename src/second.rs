@@ -1,6 +1,17 @@
+// ----- Basic implementation of list -----
+
 struct Node<T> {
     value: T,
     next: Option<Box<Node<T>>>,
+}
+
+impl<T> Node<T> {
+    pub fn length_after(&self) -> u32 {
+        match &self.next {
+            None => 0,
+            Some(node) => 1 + node.length_after(),
+        }
+    }
 }
 
 pub struct List<T> {
@@ -41,29 +52,6 @@ impl<T> List<T> {
             Some(first) => 1 + first.length_after(),
         }
     }
-
-    // Take ownership of self, give it to the iterator.
-    pub fn into_iter(self) -> IntoIter<T> {
-        IntoIter(self)
-    }
-
-    // Borrow self, lend to the iterator
-    pub fn iter(&self) -> Iter<T> {
-        // lifetime elision, everything in fn signature is in 'a
-        Iter {
-            // Convert the head (an Option<Box<Node<T>>) to a Option<&Node<T>> for the Iter struct.
-            next: self.head.as_ref().map::<&Node<T>, _>(|n| &n),
-        }
-    }
-}
-
-impl<T> Node<T> {
-    pub fn length_after(&self) -> u32 {
-        match &self.next {
-            None => 0,
-            Some(node) => 1 + node.length_after(),
-        }
-    }
 }
 
 impl<T> Drop for List<T> {
@@ -75,7 +63,15 @@ impl<T> Drop for List<T> {
     }
 }
 
+// ----- IntoIter -----
 pub struct IntoIter<T>(List<T>);
+
+impl<T> List<T> {
+    // Take ownership of self, give it to the iterator.
+    pub fn into_iter(self) -> IntoIter<T> {
+        IntoIter(self)
+    }
+}
 
 impl<T> Iterator for IntoIter<T> {
     type Item = T;
@@ -84,8 +80,20 @@ impl<T> Iterator for IntoIter<T> {
     }
 }
 
+// ----- Iter -----
 pub struct Iter<'a, T> {
     next: Option<&'a Node<T>>,
+}
+
+impl<T> List<T> {
+    // Borrow self, lend to the iterator
+    pub fn iter(&self) -> Iter<T> {
+        // lifetime elision, everything in fn signature is in 'a
+        Iter {
+            // Convert the head (an Option<Box<Node<T>>) to a Option<&Node<T>> for the Iter struct.
+            next: self.head.as_ref().map::<&Node<T>, _>(|n| &n),
+        }
+    }
 }
 
 impl<'a, T> Iterator for Iter<'a, T> {
@@ -99,6 +107,7 @@ impl<'a, T> Iterator for Iter<'a, T> {
     }
 }
 
+// ----- Tests -----
 #[cfg(test)]
 mod test {
     use super::List;
