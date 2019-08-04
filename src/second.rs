@@ -107,6 +107,33 @@ impl<'a, T> Iterator for Iter<'a, T> {
     }
 }
 
+// ----- IterMut -----
+pub struct IterMut<'a, T> {
+    next: Option<&'a mut Node<T>>,
+}
+
+impl<T> List<T> {
+    // Borrow self, lend to the iterator
+    pub fn iter_mut(&mut self) -> IterMut<T> {
+        // lifetime elision, everything in fn signature is in 'a
+        IterMut {
+            // Convert the head (an Option<Box<Node<T>>) to a Option<&mut Node<T>> for the Iter struct.
+            next: self.head.as_mut().map(|n| &mut **n),
+        }
+    }
+}
+
+impl<'a, T> Iterator for IterMut<'a, T> {
+    type Item = &'a mut T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.take().map(|node| {
+            // Convert the head (an Option<Box<Node<T>>) to a Option<&mut Node<T>> for the Iter struct.
+            self.next = node.next.as_mut().map(|n| &mut **n);
+            &mut node.value
+        })
+    }
+}
+
 // ----- Tests -----
 #[cfg(test)]
 mod test {
@@ -185,5 +212,25 @@ mod test {
             x -= 1;
         }
         assert_eq!(x, 0)
+    }
+
+    #[test]
+    fn list_iter_mut() {
+        let mut list = List::<i32>::new();
+        for x in 1..=10 {
+            list.push(x);
+        }
+
+        let mut x: i32 = 10;
+        for el in list.iter_mut() {
+            assert_eq!(el, &x);
+            *el = 0;
+            x -= 1;
+        }
+        assert_eq!(x, 0);
+
+        for el in list.iter() {
+            assert_eq!(el, &0);
+        }
     }
 }
