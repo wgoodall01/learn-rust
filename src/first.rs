@@ -51,6 +51,15 @@ impl<T> Link<T> {
     }
 }
 
+impl<T> Drop for List<T> {
+    fn drop(&mut self) {
+        let mut current_link = mem::replace(&mut self.head, Link::Empty);
+        while let Link::More(mut boxed_node) = current_link {
+            current_link = mem::replace(&mut boxed_node.next, Link::Empty);
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::List;
