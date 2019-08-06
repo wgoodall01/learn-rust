@@ -1,4 +1,5 @@
 use bitvec::prelude::*;
+use std::iter;
 
 fn get_bit(byte: u8, index: u8) -> bool {
     assert!(index < 8); // make sure index makes sense
@@ -47,8 +48,13 @@ pub fn next_layer(rule: u8, input: &BitVec) -> BitVec {
     out
 }
 
+/// Iterates through the layers of the given rule
+pub fn iter_layers(rule: u8) -> impl Iterator<Item = BitVec> {
+    iter::successors(Some(bitvec![1]), move |last| Some(next_layer(rule, last)))
+}
+
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
@@ -79,4 +85,12 @@ mod test {
         assert_eq!(next_layer(30, &input), correct_output);
     }
 
+    #[test]
+    pub fn rule_30_iter() {
+        let layers = iter_layers(30);
+        assert_eq!(
+            layers.skip(5).next().unwrap(),
+            bitvec![1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1]
+        )
+    }
 }

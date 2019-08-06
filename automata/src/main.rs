@@ -3,7 +3,6 @@ pub mod ca;
 
 use bitvec::prelude::*;
 use ca::*;
-use std::iter;
 use std::str;
 
 fn main() {
@@ -11,7 +10,7 @@ fn main() {
 }
 
 fn print_rule(rule: u8, length: usize) {
-    let mut layers = iter::successors(Some(bitvec![1]), |latest| Some(next_layer(rule, latest)));
+    let mut layers = iter_layers(rule);
 
     for i in 0..length {
         // {' ' * length-i}{layer}
