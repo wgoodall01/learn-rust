@@ -1,5 +1,5 @@
 [package]
-name = "learn-rust"
+name = "linked-lists"
 version = "0.1.0"
 authors = ["William Goodall <wgoodall01@gmail.com>"]
 edition = "2018"
