@@ -1,4 +1,3 @@
-use bitvec::prelude::*;
 use std::iter;
 
 fn get_bit(byte: u8, index: u8) -> bool {
@@ -31,14 +30,15 @@ pub fn test_rule(rule: u8, input: (bool, bool, bool)) -> bool {
 }
 
 /// Generates the next layer in the CA with the given `rule` and `input` layer above.
-pub fn next_layer(rule: u8, input: &BitVec) -> BitVec {
-    let mut out = BitVec::new();
+pub fn next_layer(rule: u8, input: &[bool]) -> Vec<bool> {
+    let mut out: Vec<bool> = Vec::new();
     out.reserve(input.len() + 2); // Reserve the 2 new cells either side.
 
     // Function to get the input bit at a given location. If the location isn't
     // included in `input`, return false---the empty cell.
-    let input_bit = |loc: isize| input.get(loc as usize).unwrap_or(false);
+    let input_bit = |loc: isize| input.get(loc as usize).unwrap_or(&false).clone();
 
+    // TODO: perhaps use slice.windows()?
     for i in (-1 as isize)..(input.len() + 1) as isize {
         let input_triple = (input_bit(i - 1), input_bit(i), input_bit(i + 1));
         let cell = test_rule(rule, input_triple);
@@ -49,8 +49,8 @@ pub fn next_layer(rule: u8, input: &BitVec) -> BitVec {
 }
 
 /// Iterates through the layers of the given rule
-pub fn iter_layers(rule: u8) -> impl Iterator<Item = BitVec> {
-    iter::successors(Some(bitvec![1]), move |last| Some(next_layer(rule, last)))
+pub fn iter_layers(rule: u8) -> impl Iterator<Item = Vec<bool>> {
+    iter::successors(Some(vec![true]), move |last| Some(next_layer(rule, last)))
 }
 
 #[cfg(test)]
@@ -80,8 +80,10 @@ mod tests {
     #[test]
     pub fn rule_30_layer() {
         // from https://en.wikipedia.org/wiki/Rule_30#Rule_set
-        let input = bitvec![1, 1, 0, 0, 1, 0, 0, 0, 1];
-        let correct_output = bitvec![1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1];
+        let input = vec![true, true, false, false, true, false, false, false, true];
+        let correct_output = vec![
+            true, true, false, true, true, true, true, false, true, true, true,
+        ];
         assert_eq!(next_layer(30, &input), correct_output);
     }
 
@@ -90,7 +92,7 @@ mod tests {
         let layers = iter_layers(30);
         assert_eq!(
             layers.skip(5).next().unwrap(),
-            bitvec![1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1]
+            &[true, true, false, true, true, true, true, false, true, true, true]
         )
     }
 }
