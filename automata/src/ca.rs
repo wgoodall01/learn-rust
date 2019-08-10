@@ -3,14 +3,14 @@ use std::iter;
 
 fn get_bit(byte: u8, index: u8) -> bool {
     assert!(index < 8); // make sure index makes sense
-    byte & (0b00000001 << index) != 0
+    byte & (0b0000_0001 << index) != 0
 }
 
 fn set_bit(byte: u8, index: u8, value: bool) -> u8 {
     assert!(index < 8); // make sure index makes sense
 
     if get_bit(byte, index) != value {
-        let flip = 0b00000001 << index;
+        let flip = 0b0000_0001 << index;
         byte ^ flip
     } else {
         byte
